@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>暖心骚王 AI</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; display: flex; height: 100vh; }
+    #sidebar { width: 30%; background: #f8f8f8; padding: 1rem; overflow-y: auto; }
+    #chat { flex: 1; display: flex; flex-direction: column; padding: 1rem; }
+    .girl-button { display: block; margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #ccc; background: white; cursor: pointer; }
+    .girl-button.active { background: #007bff; color: white; }
+    .chat-box { flex: 1; overflow-y: auto; border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; }
+    .message { margin-bottom: 0.5rem; }
+    .user { text-align: right; color: #333; }
+    .ai { text-align: left; color: #007bff; }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h3>女生列表</h3>
+    <input type="text" id="girlNameInput" placeholder="输入昵称后回车" style="width: 100%; padding: 0.5rem;" />
+    <div id="girlList"></div>
+  </div>
+  <div id="chat">
+    <h3 id="chatTitle">请选择一个女生</h3>
+    <div class="chat-box" id="chatBox"></div>
+    <div style="display: flex;">
+      <input type="text" id="chatInput" placeholder="输入内容..." style="flex: 1; padding: 0.5rem;" />
+      <button onclick="sendMessage()" style="padding: 0.5rem;">发送</button>
+    </div>
+  </div>
+
+  <script>
+    const girlList = document.getElementById('girlList');
+    const girlNameInput = document.getElementById('girlNameInput');
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const chatTitle = document.getElementById('chatTitle');
+
+    let girls = {};
+    let currentGirl = null;
+
+    girlNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const name = girlNameInput.value.trim();
+        if (name && !girls[name]) {
+          girls[name] = [];
+          const btn = document.createElement('button');
+          btn.textContent = name;
+          btn.className = 'girl-button';
+          btn.onclick = () => switchGirl(name, btn);
+          girlList.appendChild(btn);
+          girlNameInput.value = '';
+        }
+      }
+    });
+
+    function switchGirl(name, button) {
+      currentGirl = name;
+      document.querySelectorAll('.girl-button').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      chatTitle.textContent = `与 ${name} 的聊天`;
+      renderChat();
+    }
+
+    function renderChat() {
+      chatBox.innerHTML = '';
+      (girls[currentGirl] || []).forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `message ${msg.role}`;
+        div.textContent = msg.role === 'user' ? '你：' + msg.text : 'AI：' + msg.text;
+        chatBox.appendChild(div);
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text || !currentGirl) return;
+      girls[currentGirl].push({ role: 'user', text });
+      const reply = generateReply(text);
+      girls[currentGirl].push({ role: 'ai', text: reply });
+      chatInput.value = '';
+      renderChat();
+    }
+
+    function generateReply(input) {
+      // 基本分析模拟
+      let lower = input.toLowerCase();
+      if (lower.includes('爸') || lower.includes('妈') || lower.includes('家')) {
+        if (lower.includes('吵') || lower.includes('痛苦') || lower.includes('控制')) {
+          return '你经历这些我能理解，但我可能不太适合走进你的世界。希望你一直越来越好。';
+        }
+        return '我听你这么说，感觉你成长环境应该挺不容易的...你是怎么撑过来的？';
+      }
+      if (lower.includes('照片')) {
+        return '我猜你是那种，自拍不发朋友圈但其实藏着超多美照的类型？偷偷发我一张可以吗？';
+      }
+      return '你这句话有点意思，是不是想让我更了解你一点？从你说的这些，我猜你是一个有点防备但很渴望被懂的人。';
+    }
+  </script>
+</body>
+</html>
